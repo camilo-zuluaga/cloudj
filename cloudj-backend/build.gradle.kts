@@ -19,6 +19,10 @@ repositories {
 }
 
 dependencies {
+	implementation(platform("software.amazon.awssdk:bom:2.38.2"))
+	implementation("software.amazon.awssdk:s3")
+	implementation("software.amazon.awssdk:sso")
+	implementation("software.amazon.awssdk:ssooidc")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
