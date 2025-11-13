@@ -5,15 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
-import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.UploadPartRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedUploadPartRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-import software.amazon.awssdk.services.s3.presigner.model.UploadPartPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.*;
 
 import java.time.Duration;
 import java.util.Map;
@@ -92,6 +86,22 @@ public class FileService {
                 .multipartUpload(completed));
 
         return response.location();
+    }
+
+    public String presignedURLDownload(String key) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(5))
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        PresignedGetObjectRequest request = s3Presigner.presignGetObject(getObjectPresignRequest);
+
+        return request.url().toString();
     }
 
     public void deleteFile(String fileName) {
