@@ -1,28 +1,15 @@
 package com.cloudj.backend.dto.request;
 
-public class CompletedPartDTO {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CompletedPartDTO {
     private int partNumber;
     private String eTag;
-
-    public CompletedPartDTO(int partNumber, String eTag) {
-        this.partNumber = partNumber;
-        this.eTag = eTag;
-    }
-
-    public int getPartNumber() {
-        return partNumber;
-    }
-
-    public void setPartNumber(int partNumber) {
-        this.partNumber = partNumber;
-    }
-
-    public String geteTag() {
-        return eTag;
-    }
-
-    public void seteTag(String eTag) {
-        this.eTag = eTag;
-    }
 }
