@@ -21,14 +21,17 @@ import java.util.Map;
 @Service
 public class FileService {
 
-    @Autowired
-    private S3Client s3Client;
-
-    @Autowired
-    private S3Presigner s3Presigner;
-
     @Value("${aws.bucket.name}")
     private String bucketName;
+
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
+
+    @Autowired
+    public FileService(S3Client s3Client, S3Presigner s3Presigner) {
+        this.s3Client = s3Client;
+        this.s3Presigner = s3Presigner;
+    }
 
     public String generatePresignedPutURL(String key, String fileName, String contentType) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
