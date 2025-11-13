@@ -2,7 +2,6 @@ package com.cloudj.backend.controller;
 
 import com.cloudj.backend.dto.request.CompleteMultiPartUpload;
 import com.cloudj.backend.service.FileService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +16,11 @@ import java.util.UUID;
 @RequestMapping("/files")
 public class FileController {
 
-    @Autowired
-    private FileService fileService;
+    private final FileService fileService;
+
+    public FileController(FileService fileService) {
+        this.fileService = fileService;
+    }
 
     @PostMapping("/pre-signed-url")
     public ResponseEntity<Map<String, String>> generatePresignedURL(
