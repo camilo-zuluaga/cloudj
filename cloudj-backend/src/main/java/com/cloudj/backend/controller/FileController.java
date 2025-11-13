@@ -60,4 +60,10 @@ public class FileController {
         var location = fileService.completeMultiPartUpload(key, completeMultiPartUpload);
         return ResponseEntity.ok(Map.of("key", key, "location", location));
     }
+
+    @GetMapping("/{key}")
+    public ResponseEntity<Map<String, String>> downloadPresignedURL(@PathVariable String key) {
+        var url = fileService.presignedURLDownload(key);
+        return ResponseEntity.ok(Map.of("url", url));
+    }
 }
