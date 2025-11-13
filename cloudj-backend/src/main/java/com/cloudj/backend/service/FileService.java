@@ -44,9 +44,6 @@ public class FileService {
                 .build();
 
         PresignedPutObjectRequest presignedPutObjectRequest = s3Presigner.presignPutObject(presignRequest);
-        String myURL = presignedPutObjectRequest.url().toString();
-        System.out.println(myURL);
-
         return presignedPutObjectRequest.url().toString();
     }
 
