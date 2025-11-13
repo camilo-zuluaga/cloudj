@@ -22,8 +22,8 @@ public class CompleteMultiPartUpload {
     public List<CompletedPart> convertCompletedPartsToAWS() {
         return parts.stream()
                 .map(p -> CompletedPart.builder()
-                        .partNumber(p.getPartNumber())
-                        .eTag(p.getETag())
+                        .partNumber(p.partNumber())
+                        .eTag(p.eTag())
                         .build())
                 .collect(Collectors.toList());
     }
