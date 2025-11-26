@@ -2,6 +2,7 @@ package com.cloudj.backend.controller;
 
 import com.cloudj.backend.dto.request.CompleteMultiPartUpload;
 import com.cloudj.backend.service.FileService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,13 +15,10 @@ import java.util.UUID;
         allowedHeaders = "*"
 )
 @RequestMapping("/files")
+@RequiredArgsConstructor
 public class FileController {
 
     private final FileService fileService;
-
-    public FileController(FileService fileService) {
-        this.fileService = fileService;
-    }
 
     @PostMapping("/pre-signed-url")
     public ResponseEntity<Map<String, String>> generatePresignedURL(
@@ -61,9 +59,9 @@ public class FileController {
         return ResponseEntity.ok(Map.of("key", key, "location", location));
     }
 
-    @GetMapping("/{key}")
-    public ResponseEntity<Map<String, String>> downloadPresignedURL(@PathVariable String key) {
-        var url = fileService.presignedURLDownload(key);
+    @GetMapping("/view/{key}")
+    public ResponseEntity<Map<String, String>> viewDownloadPresignedURL(@PathVariable String key) {
+        var url = fileService.presignedURLViewAndDownload(key);
         return ResponseEntity.ok(Map.of("url", url));
     }
 }
