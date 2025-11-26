@@ -10,7 +10,7 @@ import com.cloudj.backend.dto.request.RefreshTokenRequest;
 import com.cloudj.backend.dto.request.RegisterRequest;
 import com.cloudj.backend.repository.RefreshTokenRepository;
 import com.cloudj.backend.repository.UserRepository;
-import com.cloudj.backend.auth.security.JwtUtil;
+import com.cloudj.backend.auth.security.util.JwtUtil;
 import com.cloudj.backend.auth.security.TokenWithExpiration;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
