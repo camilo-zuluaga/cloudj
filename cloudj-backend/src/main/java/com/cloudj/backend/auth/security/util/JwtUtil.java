@@ -1,5 +1,6 @@
-package com.cloudj.backend.auth.security;
+package com.cloudj.backend.auth.security.util;
 
+import com.cloudj.backend.auth.security.TokenWithExpiration;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
