@@ -1,13 +1,19 @@
 package com.cloudj.backend.dto.out;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-public record ErrorResponse(
-        String message,
-        int status,
-        LocalDateTime timestamp
-) {
-    public ErrorResponse(String message, int status) {
-        this(message, status, LocalDateTime.now());
-    }
+@Builder
+@Getter
+@Setter
+public class ErrorResponse {
+
+    private String errorCode;
+    private String errorMessage;
+    private LocalDateTime timestamp;
+    private String path;
+
 }
