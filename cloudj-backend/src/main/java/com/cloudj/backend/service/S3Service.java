@@ -1,7 +1,7 @@
 package com.cloudj.backend.service;
 
 import com.cloudj.backend.dto.request.CompleteMultiPartUpload;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -13,19 +13,14 @@ import java.time.Duration;
 import java.util.Map;
 
 @Service
-public class FileService {
+@RequiredArgsConstructor
+public class S3Service {
 
     @Value("${aws.bucket.name}")
     private String bucketName;
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
-
-    @Autowired
-    public FileService(S3Client s3Client, S3Presigner s3Presigner) {
-        this.s3Client = s3Client;
-        this.s3Presigner = s3Presigner;
-    }
 
     public String generatePresignedPutURL(String key, String fileName, String contentType) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
@@ -44,7 +39,7 @@ public class FileService {
         return presignedPutObjectRequest.url().toString();
     }
 
-    public String multiPartUploadID(String key, String fileName, String contentType) {
+    public String getMultiPartUploadID(String key, String fileName, String contentType) {
         CreateMultipartUploadRequest multiPartUploadRequest = CreateMultipartUploadRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -56,7 +51,7 @@ public class FileService {
         return response.uploadId();
     }
 
-    public String multiPartPresignedURL(String key, String uploadId, int partNumber) {
+    public String getMultiPartPresignedURL(String key, String uploadId, int partNumber) {
         UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -88,7 +83,17 @@ public class FileService {
         return response.location();
     }
 
-    public String presignedURLViewAndDownload(String key) {
+    public void abortMultipartUpload(String key, String uploadId) {
+        AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .uploadId(uploadId)
+                .build();
+
+        s3Client.abortMultipartUpload(request);
+    }
+
+    public String getPresignedURLViewAndDownload(String key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -102,9 +107,5 @@ public class FileService {
         PresignedGetObjectRequest request = s3Presigner.presignGetObject(getObjectPresignRequest);
 
         return request.url().toString();
-    }
-
-    public void deleteFile(String fileName) {
-        s3Client.deleteObject(req -> req.bucket(bucketName).key(fileName));
     }
 }
