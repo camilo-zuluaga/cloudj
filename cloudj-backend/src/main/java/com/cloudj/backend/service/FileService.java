@@ -88,7 +88,7 @@ public class FileService {
         return response.location();
     }
 
-    public String presignedURLDownload(String key) {
+    public String presignedURLViewAndDownload(String key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
