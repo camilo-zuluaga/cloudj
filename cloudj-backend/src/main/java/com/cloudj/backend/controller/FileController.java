@@ -1,8 +1,11 @@
 package com.cloudj.backend.controller;
 
+import com.cloudj.backend.domain.FileMetadata;
 import com.cloudj.backend.dto.out.MessageResponse;
 import com.cloudj.backend.dto.request.CompleteMultiPartUpload;
+import com.cloudj.backend.dto.request.CompletedSingleUpload;
 import com.cloudj.backend.dto.request.CustomUserDetails;
+import com.cloudj.backend.repository.FileMetadataRepository;
 import com.cloudj.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ import java.util.UUID;
 public class FileController {
 
     private final S3Service s3Service;
+    private final FileMetadataRepository fileMetadataRepository;
 
     @PostMapping("/pre-signed-url")
     public ResponseEntity<Map<String, String>> generatePresignedURL(
@@ -40,6 +44,24 @@ public class FileController {
         return ResponseEntity.ok(Map.of("key", key, "url", url));
     }
 
+    @PostMapping("/complete-single-upload")
+    public ResponseEntity<Map<String, String>> completeSingleUploadURL(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestBody CompletedSingleUpload completedSingleUpload
+    ) {
+        FileMetadata metadata = FileMetadata.builder()
+                .id(customUserDetails.getId())
+                .s3Key(completedSingleUpload.keyName())
+                .originalFilename(completedSingleUpload.fileName())
+                .contentType(completedSingleUpload.contentType())
+                .fileSize(completedSingleUpload.fileSize())
+                .uploadedAt(LocalDateTime.now())
+                .build();
+
+        fileMetadataRepository.save(metadata);
+        return ResponseEntity.ok(Map.of("message", "File metadata saved"));
+    }
+
     @PostMapping("/start-multipart")
     public ResponseEntity<Map<String, String>> startMultipartUpload(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -48,6 +70,7 @@ public class FileController {
     ) {
         Long userId = customUserDetails.getId();
         String key = generateKey(userId);
+
         var uploadId = s3Service.getMultiPartUploadID(key, fileName, contentType);
         return ResponseEntity.ok(Map.of("key", key, "id", uploadId));
     }
