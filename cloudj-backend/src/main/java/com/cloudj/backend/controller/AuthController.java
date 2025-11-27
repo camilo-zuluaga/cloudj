@@ -1,6 +1,7 @@
 package com.cloudj.backend.controller;
 
 import com.cloudj.backend.dto.request.LoginRequest;
+import com.cloudj.backend.dto.request.RefreshTokenRequest;
 import com.cloudj.backend.dto.request.RegisterRequest;
 import com.cloudj.backend.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest user) {
         return ResponseEntity.ok(authService.login(user));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshToken) {
+        return ResponseEntity.ok(authService.refreshToken(refreshToken));
     }
 
 }
