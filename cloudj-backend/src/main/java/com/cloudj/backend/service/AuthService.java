@@ -6,6 +6,7 @@ import com.cloudj.backend.domain.RefreshToken;
 import com.cloudj.backend.domain.User;
 import com.cloudj.backend.dto.out.AuthResponse;
 import com.cloudj.backend.dto.out.MessageResponse;
+import com.cloudj.backend.dto.request.CustomUserDetails;
 import com.cloudj.backend.dto.request.LoginRequest;
 import com.cloudj.backend.dto.request.RefreshTokenRequest;
 import com.cloudj.backend.dto.request.RegisterRequest;
@@ -59,15 +60,14 @@ public class AuthService {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.username(), authRequest.password()));
 
-            User user = (User) authentication.getPrincipal();
-            System.out.println(user);
+            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
             String jwt = jwtUtil.generateToken(authentication);
             TokenWithExpiration refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
 
             RefreshToken refreshTokenEntity = RefreshToken.builder()
                     .token(refreshToken.token())
                     .expiryDate(refreshToken.expirationDate())
-                    .user(user)
+                    .user(user.getUser())
                     .build();
             refreshTokenRepository.save(refreshTokenEntity);
 
@@ -76,7 +76,6 @@ public class AuthService {
             throw new AuthException("Username or password is not correct");
         }
     }
-
 
     public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
 
