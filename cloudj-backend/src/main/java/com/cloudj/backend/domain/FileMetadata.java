@@ -33,8 +33,8 @@ public class FileMetadata {
     @Column(length = 150, nullable = false)
     private String contentType;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public FileMetadata(String s3Key, String originalFilename, Long fileSize, LocalDateTime uploadedAt, String contentType, User user) {
