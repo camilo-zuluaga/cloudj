@@ -1,5 +1,6 @@
 package com.cloudj.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,6 +36,7 @@ public class FileMetadata {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore // prevent json serialization
     private User user;
 
     public FileMetadata(String s3Key, String originalFilename, Long fileSize, LocalDateTime uploadedAt, String contentType, User user) {
