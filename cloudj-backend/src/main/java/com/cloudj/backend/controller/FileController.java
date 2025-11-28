@@ -29,7 +29,7 @@ public class FileController {
     private final S3Service s3Service;
     private final FileService fileService;
 
-    @PostMapping("/pre-signed-url")
+    @PostMapping("/presigned-url")
     public ResponseEntity<Map<String, String>> generatePresignedURL(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestParam("fileName") String fileName,
