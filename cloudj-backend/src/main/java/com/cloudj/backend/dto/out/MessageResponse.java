@@ -1,4 +1,6 @@
 package com.cloudj.backend.dto.out;
 
-public record MessageResponse(String message) {
+import java.time.LocalDateTime;
+
+public record MessageResponse(String message, LocalDateTime timestamp) {
 }
