@@ -15,6 +15,7 @@ import com.cloudj.backend.exceptions.JWTException;
 import com.cloudj.backend.repository.RefreshTokenRepository;
 import com.cloudj.backend.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +36,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public MessageResponse register(RegisterRequest registerRequest) {
 
         userRepository.findByUsername(registerRequest.username())
@@ -54,6 +56,7 @@ public class AuthService {
         return new MessageResponse("New user registered successfully", LocalDateTime.now());
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest authRequest) {
 
         try {
