@@ -5,7 +5,7 @@ import com.cloudj.backend.dto.out.MessageResponse;
 import com.cloudj.backend.dto.request.CompleteMultiPartUpload;
 import com.cloudj.backend.dto.request.CompletedSingleUpload;
 import com.cloudj.backend.dto.request.CustomUserDetails;
-import com.cloudj.backend.repository.FileMetadataRepository;
+import com.cloudj.backend.service.FileService;
 import com.cloudj.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ import java.util.UUID;
 public class FileController {
 
     private final S3Service s3Service;
-    private final FileMetadataRepository fileMetadataRepository;
+    private final FileService fileService;
 
     @PostMapping("/pre-signed-url")
     public ResponseEntity<Map<String, String>> generatePresignedURL(
@@ -45,21 +46,12 @@ public class FileController {
     }
 
     @PostMapping("/complete-single-upload")
-    public ResponseEntity<Map<String, String>> completeSingleUploadURL(
+    public ResponseEntity<MessageResponse> completeSingleUploadURL(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody CompletedSingleUpload completedSingleUpload
     ) {
-        FileMetadata metadata = FileMetadata.builder()
-                .id(customUserDetails.getId())
-                .s3Key(completedSingleUpload.keyName())
-                .originalFilename(completedSingleUpload.fileName())
-                .contentType(completedSingleUpload.contentType())
-                .fileSize(completedSingleUpload.fileSize())
-                .uploadedAt(LocalDateTime.now())
-                .build();
-
-        fileMetadataRepository.save(metadata);
-        return ResponseEntity.ok(Map.of("message", "File metadata saved"));
+        var response = fileService.saveMetadata(customUserDetails.getUser(), completedSingleUpload);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/start-multipart")
@@ -113,5 +105,10 @@ public class FileController {
 
     private String generateKey(Long userId) {
         return "user_%s/%s".formatted(userId, UUID.randomUUID());
+    }
+
+    @GetMapping()
+    public List<FileMetadata> getUserFiles(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return fileService.getUserFiles(customUserDetails.getId());
     }
 }
