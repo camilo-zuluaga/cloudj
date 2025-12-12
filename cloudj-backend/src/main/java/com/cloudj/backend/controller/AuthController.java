@@ -1,15 +1,13 @@
 package com.cloudj.backend.controller;
 
 import com.cloudj.backend.dto.request.LoginRequest;
-import com.cloudj.backend.dto.request.RefreshTokenRequest;
 import com.cloudj.backend.dto.request.RegisterRequest;
 import com.cloudj.backend.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,13 +22,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest user) {
-        return ResponseEntity.ok(authService.login(user));
+    public ResponseEntity<?> login(@RequestBody LoginRequest user, HttpServletResponse response) {
+        return ResponseEntity.ok(authService.login(user, response));
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshToken) {
-        return ResponseEntity.ok(authService.refreshToken(refreshToken));
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request));
     }
-
 }

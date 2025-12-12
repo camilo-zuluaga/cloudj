@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @RestController
 @CrossOrigin(
-        origins = {"http://localhost:5000", "http://127.0.0.1:5000"},
+        origins = {"http://localhost:5173", "http://127.0.0.1:5173"},
         allowedHeaders = "*"
 )
 @RequestMapping("/api/files")
