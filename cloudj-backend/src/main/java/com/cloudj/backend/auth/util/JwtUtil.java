@@ -1,16 +1,17 @@
-package com.cloudj.backend.auth.security.util;
+package com.cloudj.backend.auth.util;
 
-import com.cloudj.backend.auth.security.TokenWithExpiration;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.WebUtils;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -107,5 +108,10 @@ public class JwtUtil {
             return null;
         }
         return bearerToken.substring(7);
+    }
+
+    public String extractTokenFromCookie(HttpServletRequest request) {
+        Cookie cookie = WebUtils.getCookie(request, "refreshToken");
+        return cookie != null ? cookie.getValue() : null;
     }
 }
