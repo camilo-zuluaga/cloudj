@@ -1,20 +1,20 @@
 package com.cloudj.backend.service;
 
-import com.cloudj.backend.auth.security.TokenWithExpiration;
-import com.cloudj.backend.auth.security.util.JwtUtil;
+import com.cloudj.backend.auth.util.JwtUtil;
+import com.cloudj.backend.auth.util.TokenWithExpiration;
 import com.cloudj.backend.domain.RefreshToken;
 import com.cloudj.backend.domain.User;
 import com.cloudj.backend.dto.out.AuthResponse;
 import com.cloudj.backend.dto.out.MessageResponse;
 import com.cloudj.backend.dto.request.CustomUserDetails;
 import com.cloudj.backend.dto.request.LoginRequest;
-import com.cloudj.backend.dto.request.RefreshTokenRequest;
 import com.cloudj.backend.dto.request.RegisterRequest;
 import com.cloudj.backend.exceptions.AuthException;
 import com.cloudj.backend.exceptions.JWTException;
 import com.cloudj.backend.repository.RefreshTokenRepository;
 import com.cloudj.backend.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +30,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final CookieService cookieService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
@@ -48,7 +49,6 @@ public class AuthService {
                 .email(registerRequest.email())
                 .username(registerRequest.username())
                 .password(passwordEncoder.encode(registerRequest.password()))
-//                .roles(Set.of(new Role("Test")))
                 .build();
 
         userRepository.save(user);
@@ -57,7 +57,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponse login(LoginRequest authRequest) {
+    public AuthResponse login(LoginRequest authRequest, HttpServletResponse response) {
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -67,6 +67,9 @@ public class AuthService {
             String jwt = jwtUtil.generateToken(authentication);
             TokenWithExpiration refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
 
+            cookieService.addHttpOnlyCookie("refreshToken", refreshToken.token(),
+                    7 * 24 * 60 * 60, response);
+
             RefreshToken refreshTokenEntity = RefreshToken.builder()
                     .token(refreshToken.token())
                     .expiryDate(refreshToken.expirationDate())
@@ -74,15 +77,16 @@ public class AuthService {
                     .build();
             refreshTokenRepository.save(refreshTokenEntity);
 
-            return new AuthResponse(jwt, refreshToken.token());
+            return new AuthResponse(jwt);
         } catch (Exception e) {
             throw new AuthException("Username or password is not correct");
         }
     }
 
-    public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+    public AuthResponse refreshToken(HttpServletRequest request) {
 
-        String token = refreshTokenRequest.refreshToken();
+        String token = jwtUtil.extractTokenFromCookie(request);
+        System.out.println(token);
 
         if (!jwtUtil.validateToken(token)) {
             throw new JWTException("Invalid JWT refresh token");
@@ -97,7 +101,7 @@ public class AuthService {
         Authentication authentication = createAuthentication(user);
         String newAccessToken = jwtUtil.generateToken(authentication);
 
-        return new AuthResponse(newAccessToken, token);
+        return new AuthResponse(newAccessToken);
     }
 
     private Authentication createAuthentication(User user) {
