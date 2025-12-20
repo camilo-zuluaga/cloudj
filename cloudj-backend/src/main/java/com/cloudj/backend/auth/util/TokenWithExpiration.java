@@ -1,4 +1,4 @@
-package com.cloudj.backend.auth.security;
+package com.cloudj.backend.auth.util;
 
 import java.util.Date;
 
