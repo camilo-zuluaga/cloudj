@@ -93,10 +93,11 @@ public class S3Service {
         s3Client.abortMultipartUpload(request);
     }
 
-    public String getPresignedURLViewAndDownload(String key) {
+    public String getPresignedURLViewAndDownload(String key, String filename) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
+                .responseContentDisposition("attachment; filename=\"" + filename + "\"")
                 .build();
 
         GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
@@ -107,5 +108,14 @@ public class S3Service {
         PresignedGetObjectRequest request = s3Presigner.presignGetObject(getObjectPresignRequest);
 
         return request.url().toString();
+    }
+
+    public void deleteFile(String key) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        s3Client.deleteObject(deleteObjectRequest);
     }
 }
