@@ -38,7 +38,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public MessageResponse register(RegisterRequest registerRequest) {
+    public MessageResponse<String> register(RegisterRequest registerRequest) {
 
         userRepository.findByUsername(registerRequest.username())
                 .ifPresent(user -> {
@@ -53,7 +53,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return new MessageResponse("New user registered successfully", LocalDateTime.now());
+        return new MessageResponse<>("New user registered successfully", LocalDateTime.now());
     }
 
     @Transactional
@@ -77,7 +77,7 @@ public class AuthService {
                     .build();
             refreshTokenRepository.save(refreshTokenEntity);
 
-            return new AuthResponse(jwt);
+            return new AuthResponse(jwt, user.getUsername());
         } catch (Exception e) {
             throw new AuthException("Username or password is not correct");
         }
@@ -86,7 +86,6 @@ public class AuthService {
     public AuthResponse refreshToken(HttpServletRequest request) {
 
         String token = jwtUtil.extractTokenFromCookie(request);
-        System.out.println(token);
 
         if (!jwtUtil.validateToken(token)) {
             throw new JWTException("Invalid JWT refresh token");
@@ -95,13 +94,13 @@ public class AuthService {
         RefreshToken refreshTokenEntity = refreshTokenRepository.findByToken(token)
                 .filter(refreshToken -> !refreshToken.isRevoked())
                 .filter(refreshToken -> refreshToken.getExpiryDate().after(new Date()))
-                .orElseThrow(() -> new JWTException("Invalid JWT token"));
+                .orElseThrow(() -> new JWTException("Invalid Refresh JWT token"));
 
         User user = refreshTokenEntity.getUser();
         Authentication authentication = createAuthentication(user);
         String newAccessToken = jwtUtil.generateToken(authentication);
 
-        return new AuthResponse(newAccessToken);
+        return new AuthResponse(newAccessToken, user.getUsername());
     }
 
     private Authentication createAuthentication(User user) {
@@ -110,20 +109,8 @@ public class AuthService {
                 user.getAuthorities());
     }
 
-    public void logout(HttpServletRequest httpServletRequest) {
-        String authHeader = httpServletRequest.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new JWTException("Missing or Invalid authorization header");
-        }
-
-        String jwt = authHeader.substring(7);
-
-        if (!jwtUtil.validateToken(jwt)) {
-            throw new JWTException("Invalid JWT token");
-        }
-
-        String username = jwtUtil.getUsernameFromToken(jwt);
-        refreshTokenRepository.revokeAllByUsername(username); // well, logs out of every device
+    public void logout(String username, HttpServletResponse response) {
+        cookieService.deleteCookie("refreshToken", response);
+        refreshTokenRepository.revokeAllByUsername(username);
     }
 }
