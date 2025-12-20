@@ -5,6 +5,7 @@ import com.cloudj.backend.dto.out.MessageResponse;
 import com.cloudj.backend.dto.request.CompleteMultiPartUpload;
 import com.cloudj.backend.dto.request.CompletedSingleUpload;
 import com.cloudj.backend.dto.request.CustomUserDetails;
+import com.cloudj.backend.dto.request.PresignedPart;
 import com.cloudj.backend.service.FileService;
 import com.cloudj.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,6 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(
-        origins = {"http://localhost:5173", "http://127.0.0.1:5173"},
-        allowedHeaders = "*"
-)
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
 public class FileController {
@@ -50,7 +47,8 @@ public class FileController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody CompletedSingleUpload completedSingleUpload
     ) {
-        var response = fileService.saveMetadata(customUserDetails.getUser(), completedSingleUpload);
+        var response = fileService.saveMetadata(customUserDetails.getUser(),
+                completedSingleUpload);
         return ResponseEntity.ok(response);
     }
 
@@ -67,44 +65,54 @@ public class FileController {
         return ResponseEntity.ok(Map.of("key", key, "id", uploadId));
     }
 
-    @PostMapping("{key}/pre-signed-part")
+    @PostMapping("/pre-signed-part")
     public ResponseEntity<Map<String, String>> generatePresignedPart(
-            @PathVariable String key,
-            @RequestParam String uploadId,
-            @RequestParam int partNumber
+            @RequestBody PresignedPart presignedPart
     ) {
-        var url = s3Service.getMultiPartPresignedURL(key, uploadId, partNumber);
-        return ResponseEntity.ok(Map.of("key", key, "url", url));
+        var url = s3Service.getMultiPartPresignedURL(presignedPart.key(),
+                presignedPart.uploadId(), presignedPart.currentPart());
+        return ResponseEntity.ok(Map.of("key", presignedPart.key(), "url", url));
     }
 
-    @PostMapping("{key}/complete-multipart-upload")
+    @PostMapping("/complete-multipart-upload")
     public ResponseEntity<Map<String, String>> completeMultipartUpload(
-            @PathVariable String key,
             @RequestBody CompleteMultiPartUpload completeMultiPartUpload
     ) {
-        var location = s3Service.completeMultiPartUpload(key, completeMultiPartUpload);
-        return ResponseEntity.ok(Map.of("key", key, "location", location));
+        var location = s3Service.completeMultiPartUpload(completeMultiPartUpload.getKey(), completeMultiPartUpload);
+        return ResponseEntity.ok(Map.of("key", completeMultiPartUpload.getKey(), "location", location));
     }
 
     @PostMapping("{key}/abort-multipart")
-    public ResponseEntity<MessageResponse> abortMultipartUpload(@PathVariable String key,
-                                                                @RequestParam String uploadId) {
+    public ResponseEntity<MessageResponse<String>> abortMultipartUpload(@PathVariable String key,
+                                                                        @RequestParam String uploadId) {
         s3Service.abortMultipartUpload(key, uploadId);
-        return ResponseEntity.ok(new MessageResponse("Multi part aborted", LocalDateTime.now()));
+        return ResponseEntity.ok(new MessageResponse<>("Multi part aborted", LocalDateTime.now()));
     }
 
     @GetMapping("/view/{key}")
     public ResponseEntity<Map<String, String>> viewDownloadPresignedURL(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @PathVariable String key
+            @PathVariable String key,
+            @RequestParam String filename
     ) {
         String keyName = "user_%s/%s".formatted(customUserDetails.getId(), key);
-        var url = s3Service.getPresignedURLViewAndDownload(keyName);
+        var url = s3Service.getPresignedURLViewAndDownload(keyName, filename);
         return ResponseEntity.ok(Map.of("url", url));
     }
 
     private String generateKey(Long userId) {
         return "user_%s/%s".formatted(userId, UUID.randomUUID());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteFile(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable Long id
+    ) {
+        var fileMetadata= fileService.getS3KeyById(id);
+        s3Service.deleteFile(fileMetadata.getS3Key());
+        fileService.deleteFileById(id);
+        return ResponseEntity.ok(Map.of("message", "file deleted successfully"));
     }
 
     @GetMapping()
