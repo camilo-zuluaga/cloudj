@@ -19,7 +19,7 @@ public class FileService {
     private final FileMetadataRepository metadataRepository;
 
     @Transactional
-    public MessageResponse saveMetadata(User user, CompletedSingleUpload request) {
+    public MessageResponse<FileMetadata> saveMetadata(User user, CompletedSingleUpload request) {
         FileMetadata metadata = FileMetadata.builder()
                 .user(user)
                 .s3Key(request.keyName())
@@ -30,10 +30,18 @@ public class FileService {
                 .build();
 
         metadataRepository.save(metadata);
-        return new MessageResponse("File metadata saved", LocalDateTime.now());
+        return new MessageResponse<>(metadata, LocalDateTime.now());
+    }
+
+    public FileMetadata getS3KeyById(Long id) {
+        return metadataRepository.findById(id).orElseThrow();
     }
 
     public List<FileMetadata> getUserFiles(Long id) {
         return metadataRepository.findFilesByUserId(id);
+    }
+
+    public void deleteFileById(Long id) {
+        metadataRepository.deleteById(id);
     }
 }
