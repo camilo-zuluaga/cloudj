@@ -1,7 +1,7 @@
 package com.cloudj.backend.auth.filter;
 
 import com.cloudj.backend.service.CustomUserDetailsService;
-import com.cloudj.backend.auth.security.util.JwtUtil;
+import com.cloudj.backend.auth.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
