@@ -27,7 +27,7 @@ public class RefreshToken {
     @Column(nullable = false)
     private boolean revoked;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
