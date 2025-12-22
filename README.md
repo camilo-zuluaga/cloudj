@@ -1,3 +1,5 @@
+https://github.com/user-attachments/assets/acfb7ab1-0773-4287-a15a-c9377877ef81
+
 # Cloudj
 CloudJ is a cloud storage web application inspired by platforms like Google Drive and MediaFire. It allows users to securely upload, store, and manage files using Amazon S3 as object storage.
 The system supports both single-part and multipart uploads through pre-signed URLs, enabling efficient and reliable handling of large files directly from the client.
