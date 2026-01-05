@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/useAuthStore"
 import ArrowDownIcon from "@/icons/ArrowDownIcon.vue"
 import DeleteIcon from "@/icons/DeleteIcon.vue"
 import LinkIcon from "@/icons/LinkIcon.vue"
+import CancelIcon from "@/icons/CancelIcon.vue"
 
 const emit = defineEmits(["deleteResponse"])
 
@@ -61,11 +62,19 @@ async function deleteFileById() {
         <td>{{ fileName }}</td>
         <td style="color: #373737">{{ fileExtension }}</td>
         <td style="color: #373737; text-align: right">{{ size }}</td>
-        <td style="color: #373737">{{ date }}</td>
-        <td style="color: #373737" class="btn-td">
+        <td style="color: #373737">
             <div v-if="isUploading" class="loader-container">
-                <v-progress-linear :model-value="progress" style="width: 95px"></v-progress-linear>
+                <v-progress-linear :model-value="progress" style="width: 80%"></v-progress-linear>
                 <div>{{ progress }}%</div>
+            </div>
+
+            <div v-else>
+                {{ date }}
+            </div>
+        </td>
+        <td style="color: #373737" class="btn-td">
+            <div v-if="isUploading" class="btn-container">
+                <CancelIcon class="cancel-btn" />
             </div>
             <div v-else class="btn-container">
                 <ArrowDownIcon class="download-btn" @click="downloadFileByS3Key" />
@@ -120,6 +129,16 @@ td {
 
 .link-btn:hover {
     color: #8b5d9e;
+}
+
+.cancel-btn {
+    cursor: pointer;
+    width: 30px;
+    transition: 0.1s ease-in-out;
+}
+
+.cancel-btn:hover {
+    color: #ab3e3e;
 }
 
 .btn-container {
