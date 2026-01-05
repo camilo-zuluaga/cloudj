@@ -27,12 +27,14 @@ export function useMultipartUpload() {
 
         try {
             await uploadParts(onProgress)
-            await saveMetadata(key, file.name, file.type, file.size)
+            const response = await saveMetadata(key, file.name, file.type, file.size)
             return {
                 success: true,
                 key,
                 message: "File uploaded successfully",
                 fileData: {
+                    id: response.message.id,
+                    s3Key: response.message.s3Key,
                     fileName: file.name,
                     fileSize: file.size,
                     uploadedAt: new Date().toISOString().slice(0, 10),
@@ -144,7 +146,7 @@ export function useMultipartUpload() {
 
     async function saveMetadata(keyName, fileName, contentType, fileSize) {
         try {
-            await axios.post(
+            const response = await axios.post(
                 "/api/files/complete-single-upload",
                 {
                     keyName,
@@ -159,6 +161,8 @@ export function useMultipartUpload() {
                     },
                 },
             )
+
+            return response.data
         } catch (err) {
             throw new Error("Could not save metadata")
         }
