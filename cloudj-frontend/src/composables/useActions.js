@@ -19,7 +19,24 @@ export function useActions() {
     async function downloadFile(key, filename) {
         const getKey = key.slice(key.lastIndexOf("/") + 1)
         try {
-            const response = await axios.get(`/api/files/view/${getKey}`, {
+            const response = await axios.get(`/api/files/${getKey}/download`, {
+                params: {
+                    filename,
+                },
+                headers: {
+                    Authorization: `Bearer ${auth.accessToken}`,
+                },
+            })
+            return response.data
+        } catch (err) {
+            throw new Error(err)
+        }
+    }
+
+    async function shareFile(key, filename) {
+        const getKey = key.slice(key.lastIndexOf("/") + 1)
+        try {
+            const response = await axios.get(`/api/files/${getKey}/share`, {
                 params: {
                     filename,
                 },
@@ -36,5 +53,6 @@ export function useActions() {
     return {
         deleteFile,
         downloadFile,
+        shareFile
     }
 }
