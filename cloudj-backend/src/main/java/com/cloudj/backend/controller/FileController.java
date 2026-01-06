@@ -2,10 +2,7 @@ package com.cloudj.backend.controller;
 
 import com.cloudj.backend.domain.FileMetadata;
 import com.cloudj.backend.dto.out.MessageResponse;
-import com.cloudj.backend.dto.request.CompleteMultiPartUpload;
-import com.cloudj.backend.dto.request.CompletedSingleUpload;
-import com.cloudj.backend.dto.request.CustomUserDetails;
-import com.cloudj.backend.dto.request.PresignedPart;
+import com.cloudj.backend.dto.request.*;
 import com.cloudj.backend.service.FileService;
 import com.cloudj.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -42,16 +39,6 @@ public class FileController {
         return ResponseEntity.ok(Map.of("key", key, "url", url));
     }
 
-    @PostMapping("/complete-single-upload")
-    public ResponseEntity<MessageResponse> completeSingleUploadURL(
-            @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @RequestBody CompletedSingleUpload completedSingleUpload
-    ) {
-        var response = fileService.saveMetadata(customUserDetails.getUser(),
-                completedSingleUpload);
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping("/start-multipart")
     public ResponseEntity<Map<String, String>> startMultipartUpload(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -83,10 +70,24 @@ public class FileController {
     }
 
     @PostMapping("{key}/abort-multipart")
-    public ResponseEntity<MessageResponse<String>> abortMultipartUpload(@PathVariable String key,
-                                                                        @RequestParam String uploadId) {
-        s3Service.abortMultipartUpload(key, uploadId);
+    public ResponseEntity<MessageResponse<String>> abortMultipartUpload(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable String key,
+            @RequestParam String uploadId)
+    {
+        String keyName = "user_%s/%s".formatted(customUserDetails.getId(), key);
+        s3Service.abortMultipartUpload(keyName, uploadId);
         return ResponseEntity.ok(new MessageResponse<>("Multi part aborted", LocalDateTime.now()));
+    }
+
+    @PostMapping("/complete-upload")
+    public ResponseEntity<MessageResponse<FileMetadata>> completeSingleUploadURL(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestBody CompletedUpload completedUpload
+    ) {
+        var response = fileService.saveMetadata(customUserDetails.getUser(),
+                completedUpload);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/view/{key}")
@@ -109,7 +110,7 @@ public class FileController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable Long id
     ) {
-        var fileMetadata= fileService.getS3KeyById(id);
+        var fileMetadata = fileService.getS3KeyById(id);
         s3Service.deleteFile(fileMetadata.getS3Key());
         fileService.deleteFileById(id);
         return ResponseEntity.ok(Map.of("message", "file deleted successfully"));
