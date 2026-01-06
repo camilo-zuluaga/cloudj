@@ -11,9 +11,12 @@ export function useMultipartUpload() {
         uploadedParts: [],
         uploadedBytes: 0,
     }
+    let currentController = null
     const auth = useAuthStore()
 
     async function upload(file, onProgress) {
+        currentController = new AbortController()
+
         uploadState.file = file
         uploadState.currentPart = 0
         uploadState.uploadedParts = []
@@ -28,6 +31,7 @@ export function useMultipartUpload() {
         try {
             await uploadParts(onProgress)
             const response = await saveMetadata(key, file.name, file.type, file.size)
+            currentController = null
             return {
                 success: true,
                 key,
@@ -41,6 +45,11 @@ export function useMultipartUpload() {
                 },
             }
         } catch (err) {
+            currentController = null
+            if (axios.isCancel(err)) {
+                await abortMultipart(key, id)
+                return { success: false, error: "Upload cancelled" }
+            }
             throw new Error(err)
         }
     }
@@ -113,6 +122,7 @@ export function useMultipartUpload() {
 
     async function uploadPart(url, part, onProgress) {
         return axios.put(url, part, {
+            signal: currentController.signal,
             onUploadProgress: (progressEvent) => {
                 const currentPartBytes = progressEvent.loaded
                 const totalUploadedBytes = uploadState.uploadedBytes + currentPartBytes
@@ -147,7 +157,7 @@ export function useMultipartUpload() {
     async function saveMetadata(keyName, fileName, contentType, fileSize) {
         try {
             const response = await axios.post(
-                "/api/files/complete-single-upload",
+                "/api/files/complete-upload",
                 {
                     keyName,
                     fileName,
@@ -171,7 +181,7 @@ export function useMultipartUpload() {
     async function completeMultiPartUpload(key, uploadId, uploadedParts) {
         try {
             const response = await axios.post(
-                `/api/files/complete-multipart-upload`,
+                "/api/files/complete-multipart-upload",
                 {
                     key,
                     uploadId,
@@ -191,7 +201,35 @@ export function useMultipartUpload() {
         }
     }
 
+    async function abortMultipart(key, uploadId) {
+        try {
+            const response = axios.post(
+                "/api/files/abort-multipart",
+                {
+                    key,
+                    uploadId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${auth.accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                },
+            )
+
+            return response.data
+        } catch (err) { }
+    }
+
+    function cancelUpload() {
+        if (currentController) {
+            currentController.abort()
+            currentController = null
+        }
+    }
+
     return {
         upload,
+        cancelUpload,
     }
 }
