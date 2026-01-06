@@ -136,7 +136,7 @@ export function useMultipartUpload() {
     async function getPresignedUrlForPart(key, uploadId, currentPart) {
         try {
             const response = await axios.post(
-                `/api/files/pre-signed-part`,
+                `/api/files/presigned-part`,
                 {
                     key,
                     uploadId,

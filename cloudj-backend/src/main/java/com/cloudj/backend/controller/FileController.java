@@ -55,7 +55,7 @@ public class FileController {
         return ResponseEntity.ok(new StartMultipartResponse(key, uploadId));
     }
 
-    @PostMapping("/pre-signed-part")
+    @PostMapping("/presigned-part")
     public ResponseEntity<PresignedPartResponse> generatePresignedPart(
             @RequestBody PresignedPart presignedPart
     ) {
