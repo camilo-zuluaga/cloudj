@@ -16,7 +16,7 @@ import { useFileUpload } from "@/composables/useFileUpload"
 const router = useRouter()
 const auth = useAuthStore()
 const { getFiles } = useLoadUserFiles()
-const { uploadFile } = useFileUpload()
+const { uploadFile, cancelUpload } = useFileUpload()
 
 const fileRows = ref([])
 const username = ref(null)
@@ -106,6 +106,12 @@ function insertTemporalRow(fileTemporalData) {
     return tempId
 }
 
+function handleCancel(id) {
+    fileRows.value = fileRows.value.filter((file) => file.id != id)
+    cancelUpload()
+    toast.success("File upload cancelled")
+}
+
 async function handleLogout() {
     await auth.logout()
     await router.push("/login")
@@ -138,6 +144,7 @@ async function handleLogout() {
                 :isUploading="file.uploading"
                 :progress="file.progress"
                 @deleteResponse="handleDelete"
+                @cancelUpload="handleCancel"
             />
         </Table>
         <div class="empty-files" v-if="fileRows.length === 0">No files uploaded yet</div>
