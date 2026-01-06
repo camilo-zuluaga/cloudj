@@ -11,7 +11,7 @@ import DeleteIcon from "@/icons/DeleteIcon.vue"
 import LinkIcon from "@/icons/LinkIcon.vue"
 import CancelIcon from "@/icons/CancelIcon.vue"
 
-const emit = defineEmits(["deleteResponse"])
+const emit = defineEmits(["deleteResponse", "cancelUpload"])
 
 const props = defineProps({
     id: [Number, String],
@@ -74,9 +74,9 @@ async function deleteFileById() {
         </td>
         <td style="color: #373737" class="btn-td">
             <div v-if="isUploading" class="btn-container">
-                <CancelIcon class="cancel-btn" />
+                <CancelIcon class="cancel-btn" @click="$emit('cancelUpload', id)" />
             </div>
-            <div v-else class="btn-container">
+            <div v-else class="btn-container" :class="{ disabled: isDeleting }">
                 <ArrowDownIcon class="download-btn" @click="downloadFileByS3Key" />
                 <DeleteIcon class="remove-btn" @click="deleteFileById" />
                 <LinkIcon class="link-btn" />
@@ -99,6 +99,10 @@ td {
     align-content: center;
     align-items: center;
     border: none;
+}
+
+.btn-container.disabled {
+    pointer-events: none;
 }
 
 .download-btn {
