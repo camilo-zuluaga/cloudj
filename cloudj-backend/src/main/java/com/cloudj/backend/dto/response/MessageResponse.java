@@ -1,4 +1,4 @@
-package com.cloudj.backend.dto.out;
+package com.cloudj.backend.dto.response;
 
 import java.time.LocalDateTime;
 
