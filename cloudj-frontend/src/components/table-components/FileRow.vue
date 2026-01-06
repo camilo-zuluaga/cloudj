@@ -6,10 +6,7 @@ import { VProgressLinear } from "vuetify/components"
 import { useActions } from "@/composables/useActions"
 import { useAuthStore } from "@/stores/useAuthStore"
 
-import ArrowDownIcon from "@/icons/ArrowDownIcon.vue"
-import DeleteIcon from "@/icons/DeleteIcon.vue"
-import LinkIcon from "@/icons/LinkIcon.vue"
-import CancelIcon from "@/icons/CancelIcon.vue"
+import { ArrowDownIcon, CancelIcon, DeleteIcon, LinkIcon } from "@/icons"
 
 const emit = defineEmits(["deleteResponse", "cancelUpload"])
 
@@ -24,7 +21,7 @@ const props = defineProps({
     progress: Number,
 })
 
-const { deleteFile, downloadFile } = useActions()
+const { deleteFile, downloadFile, shareFile } = useActions()
 const isDeleting = ref(false)
 
 async function downloadFileByS3Key() {
@@ -55,6 +52,24 @@ async function deleteFileById() {
         error: (data) => "Error",
     })
 }
+
+async function shareFileLink() {
+    try {
+        const type = "text/plain"
+        const response = await shareFile(props.s3Key, props.fileName)
+        const clipboardItemData = {
+            [type]: response.url,
+        }
+        const clipboardItem = new ClipboardItem(clipboardItemData)
+
+        await navigator.clipboard.write([clipboardItem])
+        toast.success("Url copied to clipboard", {
+            description: "Url will expire in 1 Hour",
+        })
+    } catch (err) {
+        throw new Error(err)
+    }
+}
 </script>
 
 <template>
@@ -79,7 +94,7 @@ async function deleteFileById() {
             <div v-else class="btn-container" :class="{ disabled: isDeleting }">
                 <ArrowDownIcon class="download-btn" @click="downloadFileByS3Key" />
                 <DeleteIcon class="remove-btn" @click="deleteFileById" />
-                <LinkIcon class="link-btn" />
+                <LinkIcon class="link-btn" @click="shareFileLink" />
             </div>
         </td>
     </tr>
