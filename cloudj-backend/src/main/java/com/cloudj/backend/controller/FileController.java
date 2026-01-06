@@ -90,14 +90,25 @@ public class FileController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/view/{key}")
-    public ResponseEntity<Map<String, String>> viewDownloadPresignedURL(
+    @GetMapping("/{key}/share")
+    public ResponseEntity<Map<String, String>> viewPresignedURL(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable String key,
             @RequestParam String filename
     ) {
         String keyName = "user_%s/%s".formatted(customUserDetails.getId(), key);
-        var url = s3Service.getPresignedURLViewAndDownload(keyName, filename);
+        var url = s3Service.getPresignedURLShare(keyName, filename);
+        return ResponseEntity.ok(Map.of("url", url));
+    }
+
+    @GetMapping("/{key}/download")
+    public ResponseEntity<Map<String, String>> downloadPresignedURL(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable String key,
+            @RequestParam String filename
+    ) {
+        String keyName = "user_%s/%s".formatted(customUserDetails.getId(), key);
+        var url = s3Service.getPresignedURLDownload(keyName, filename);
         return ResponseEntity.ok(Map.of("url", url));
     }
 
