@@ -2,7 +2,7 @@ package com.cloudj.backend.service;
 
 import com.cloudj.backend.domain.FileMetadata;
 import com.cloudj.backend.domain.User;
-import com.cloudj.backend.dto.out.MessageResponse;
+import com.cloudj.backend.dto.response.MessageResponse;
 import com.cloudj.backend.dto.request.CompletedUpload;
 import com.cloudj.backend.repository.FileMetadataRepository;
 import jakarta.transaction.Transactional;

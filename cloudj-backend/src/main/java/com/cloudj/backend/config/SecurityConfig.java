@@ -1,4 +1,4 @@
-package com.cloudj.backend.auth;
+package com.cloudj.backend.config;
 
 import com.cloudj.backend.auth.filter.JwtAuthenticationEntryPoint;
 import com.cloudj.backend.auth.filter.JwtAuthenticationFilter;

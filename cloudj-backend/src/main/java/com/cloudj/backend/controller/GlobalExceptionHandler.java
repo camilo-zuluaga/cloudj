@@ -1,6 +1,6 @@
 package com.cloudj.backend.controller;
 
-import com.cloudj.backend.dto.out.ErrorResponse;
+import com.cloudj.backend.dto.response.ErrorResponse;
 import com.cloudj.backend.exceptions.AuthException;
 import com.cloudj.backend.exceptions.JWTException;
 import jakarta.servlet.http.HttpServletRequest;
