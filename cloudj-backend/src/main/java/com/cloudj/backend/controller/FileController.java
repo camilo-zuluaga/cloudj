@@ -69,14 +69,12 @@ public class FileController {
         return ResponseEntity.ok(Map.of("key", completeMultiPartUpload.getKey(), "location", location));
     }
 
-    @PostMapping("{key}/abort-multipart")
+    @PostMapping("/abort-multipart")
     public ResponseEntity<MessageResponse<String>> abortMultipartUpload(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @PathVariable String key,
-            @RequestParam String uploadId)
+            @RequestBody AbortMultipartUpload abortMultipartUpload)
     {
-        String keyName = "user_%s/%s".formatted(customUserDetails.getId(), key);
-        s3Service.abortMultipartUpload(keyName, uploadId);
+        s3Service.abortMultipartUpload(abortMultipartUpload.key(), abortMultipartUpload.uploadId());
         return ResponseEntity.ok(new MessageResponse<>("Multi part aborted", LocalDateTime.now()));
     }
 
