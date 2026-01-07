@@ -69,5 +69,5 @@ http://localhost:3000
 ```
 
 ## Motivation
-This project was created as a learning experience to explore and integrate a modern frontend framework (Vue.js), a Spring Boot backend, and a cloud object storage service like Amazon S3.
+This project was created as a learning experience to explore the integration of a modern frontend framework (Vue.js), a Spring Boot backend, and cloud object storage (Amazon S3).
 Its primary goal is to experiment with concepts such as JWT-based authentication, pre-signed URL uploads, and multipart file handling, rather than to serve as a production-ready system which would involve much more.
