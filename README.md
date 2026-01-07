@@ -16,8 +16,10 @@ The system supports both single-part and multipart uploads through pre-signed UR
 - Abort uploads
 - Sharing file with presigned urls
 
-## Run the Project
+## Demo
+https://github.com/user-attachments/assets/1cc2b5c6-836a-40b4-82dd-c1d9953016b8
 
+## Run the Project
 ### Prerequisites
 - Docker and Docker Compose installed
 - AWS S3 bucket with CORS configured
