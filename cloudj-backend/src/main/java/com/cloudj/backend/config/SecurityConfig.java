@@ -1,4 +1,4 @@
-package com.cloudj.backend.auth;
+package com.cloudj.backend.config;
 
 import com.cloudj.backend.auth.filter.JwtAuthenticationEntryPoint;
 import com.cloudj.backend.auth.filter.JwtAuthenticationFilter;
@@ -63,7 +63,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

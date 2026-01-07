@@ -3,6 +3,7 @@ import { useAuthStore } from "@/stores/useAuthStore"
 
 export function useSingleUpload() {
     const auth = useAuthStore()
+    let currentController = null
 
     async function getPresignedUrl(fileName, contentType) {
         try {
@@ -24,8 +25,11 @@ export function useSingleUpload() {
     }
 
     async function uploadFileToS3(presignedUrl, file, onProgress) {
+        currentController = new AbortController()
+
         try {
             await axios.put(presignedUrl, file, {
+                signal: currentController.signal,
                 headers: {
                     "Content-Type": file.type,
                     "x-amz-meta-file-name": file.name,
@@ -36,7 +40,13 @@ export function useSingleUpload() {
                     onProgress?.(percent)
                 },
             })
+
+            currentController = null
         } catch (err) {
+            currentController = null
+            if (axios.isCancel(err)) {
+                throw new Error("Upload cancelled")
+            }
             throw new Error("Failed to upload file to S3")
         }
     }
@@ -44,7 +54,7 @@ export function useSingleUpload() {
     async function completeSinglePartUpload(keyName, fileName, contentType, fileSize) {
         try {
             const response = await axios.post(
-                "/api/files/complete-single-upload",
+                "/api/files/complete-upload",
                 {
                     keyName,
                     fileName,
@@ -89,7 +99,15 @@ export function useSingleUpload() {
         }
     }
 
+    function cancelUpload() {
+        if (currentController) {
+            currentController.abort()
+            currentController = null
+        }
+    }
+
     return {
         upload,
+        cancelUpload,
     }
 }

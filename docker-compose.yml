@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cloudj-db
+    environment:
+      POSTGRES_DB: cloudj
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d cloudj"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cloudj-network
+
+  backend:
+    build:
+      context: ./cloudj-backend
+      dockerfile: Dockerfile
+    container_name: cloudj-backend
+    environment:
+      datasource-url: jdbc:postgresql://postgres:5432/cloudj
+      datasource-username: ${DB_USERNAME}
+      datasource-password: ${DB_PASSWORD}
+
+      aws-secret-key-id: ${AWS_ACCESS_KEY_ID}
+      aws-secret-key: ${AWS_SECRET_ACCESS_KEY}
+      aws-region: ${AWS_REGION}
+      aws-bucket-name: ${AWS_BUCKET_NAME}
+
+      jwt-secret: ${JWT_SECRET}
+      jwt-expiration: ${JWT_EXPIRATION:-3600000}
+      jwt-refresh-expiration: ${JWT_REFRESH_EXPIRATION:-86400000}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cloudj-network
+
+  frontend:
+    build:
+      context: ./cloudj-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: cloudj-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - cloudj-network
+
+volumes:
+  postgres_data:
+
+networks:
+  cloudj-network:
+    driver: bridge

@@ -6,11 +6,9 @@ import { VProgressLinear } from "vuetify/components"
 import { useActions } from "@/composables/useActions"
 import { useAuthStore } from "@/stores/useAuthStore"
 
-import ArrowDownIcon from "@/icons/ArrowDownIcon.vue"
-import DeleteIcon from "@/icons/DeleteIcon.vue"
-import LinkIcon from "@/icons/LinkIcon.vue"
+import { ArrowDownIcon, CancelIcon, DeleteIcon, LinkIcon } from "@/icons"
 
-const emit = defineEmits(["deleteResponse"])
+const emit = defineEmits(["deleteResponse", "cancelUpload"])
 
 const props = defineProps({
     id: [Number, String],
@@ -23,7 +21,7 @@ const props = defineProps({
     progress: Number,
 })
 
-const { deleteFile, downloadFile } = useActions()
+const { deleteFile, downloadFile, shareFile } = useActions()
 const isDeleting = ref(false)
 
 async function downloadFileByS3Key() {
@@ -54,6 +52,24 @@ async function deleteFileById() {
         error: (data) => "Error",
     })
 }
+
+async function shareFileLink() {
+    try {
+        const type = "text/plain"
+        const response = await shareFile(props.s3Key, props.fileName)
+        const clipboardItemData = {
+            [type]: response.url,
+        }
+        const clipboardItem = new ClipboardItem(clipboardItemData)
+
+        await navigator.clipboard.write([clipboardItem])
+        toast.success("Url copied to clipboard", {
+            description: "Url will expire in 1 Hour",
+        })
+    } catch (err) {
+        throw new Error(err)
+    }
+}
 </script>
 
 <template>
@@ -61,16 +77,24 @@ async function deleteFileById() {
         <td>{{ fileName }}</td>
         <td style="color: #373737">{{ fileExtension }}</td>
         <td style="color: #373737; text-align: right">{{ size }}</td>
-        <td style="color: #373737">{{ date }}</td>
-        <td style="color: #373737" class="btn-td">
+        <td style="color: #373737">
             <div v-if="isUploading" class="loader-container">
-                <v-progress-linear :model-value="progress" style="width: 95px"></v-progress-linear>
+                <v-progress-linear :model-value="progress" style="width: 80%"></v-progress-linear>
                 <div>{{ progress }}%</div>
             </div>
-            <div v-else class="btn-container">
+
+            <div v-else>
+                {{ date }}
+            </div>
+        </td>
+        <td style="color: #373737" class="btn-td">
+            <div v-if="isUploading" class="btn-container">
+                <CancelIcon class="cancel-btn" @click="$emit('cancelUpload', id)" />
+            </div>
+            <div v-else class="btn-container" :class="{ disabled: isDeleting }">
                 <ArrowDownIcon class="download-btn" @click="downloadFileByS3Key" />
                 <DeleteIcon class="remove-btn" @click="deleteFileById" />
-                <LinkIcon class="link-btn" />
+                <LinkIcon class="link-btn" @click="shareFileLink" />
             </div>
         </td>
     </tr>
@@ -90,6 +114,10 @@ td {
     align-content: center;
     align-items: center;
     border: none;
+}
+
+.btn-container.disabled {
+    pointer-events: none;
 }
 
 .download-btn {
@@ -120,6 +148,16 @@ td {
 
 .link-btn:hover {
     color: #8b5d9e;
+}
+
+.cancel-btn {
+    cursor: pointer;
+    width: 30px;
+    transition: 0.1s ease-in-out;
+}
+
+.cancel-btn:hover {
+    color: #ab3e3e;
 }
 
 .btn-container {

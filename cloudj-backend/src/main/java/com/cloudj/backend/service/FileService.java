@@ -2,8 +2,8 @@ package com.cloudj.backend.service;
 
 import com.cloudj.backend.domain.FileMetadata;
 import com.cloudj.backend.domain.User;
-import com.cloudj.backend.dto.out.MessageResponse;
-import com.cloudj.backend.dto.request.CompletedSingleUpload;
+import com.cloudj.backend.dto.response.MessageResponse;
+import com.cloudj.backend.dto.request.CompletedUpload;
 import com.cloudj.backend.repository.FileMetadataRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class FileService {
     private final FileMetadataRepository metadataRepository;
 
     @Transactional
-    public MessageResponse<FileMetadata> saveMetadata(User user, CompletedSingleUpload request) {
+    public MessageResponse<FileMetadata> saveMetadata(User user, CompletedUpload request) {
         FileMetadata metadata = FileMetadata.builder()
                 .user(user)
                 .s3Key(request.keyName())
