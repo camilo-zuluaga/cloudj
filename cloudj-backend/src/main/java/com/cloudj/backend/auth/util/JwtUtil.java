@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
 
@@ -17,8 +16,6 @@ import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -51,10 +48,6 @@ public class JwtUtil {
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(secretKey)
-                .claims(Map.of("roles",
-                        authentication.getAuthorities().stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .collect(Collectors.toList())))
                 .compact();
     }
 
