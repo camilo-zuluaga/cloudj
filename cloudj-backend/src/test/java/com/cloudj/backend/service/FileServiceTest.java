@@ -19,7 +19,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -100,5 +100,11 @@ class FileServiceTest {
         List<FileMetadata> result = fileService.getUserFiles(1L);
 
         assertEquals(0, result.size());
+    }
+
+    @Test
+    void givenFileId_whenDeletingFile_thenDeleteFileCallingRepository() {
+        fileService.deleteFileById(1L);
+        verify(metadataRepository, times(1)).deleteById(1L);
     }
 }
