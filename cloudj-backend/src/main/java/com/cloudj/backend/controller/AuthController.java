@@ -39,5 +39,4 @@ public class AuthController {
         authService.logout(customUserDetails.getUsername(), response);
         return ResponseEntity.ok("Logout completed");
     }
-
 }
