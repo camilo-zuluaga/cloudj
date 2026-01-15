@@ -1,15 +1,24 @@
 import { defineStore } from "pinia"
 import axios from "axios"
+import type { LoginData } from "@/types/loginData"
+
+interface AuthState {
+    accessToken: string | null
+    username: string | null
+}
 
 export const useAuthStore = defineStore("auth", {
-    state: () => ({ accessToken: null, username: null }),
+    state: (): AuthState => ({
+        accessToken: null,
+        username: null
+    }),
 
     getters: {
-        isAuthenticated: (state) => !!state.accessToken,
+        isAuthenticated: (state): boolean => !!state.accessToken,
     },
 
     actions: {
-        async init() {
+        async init(): Promise<void> {
             try {
                 await this.refreshToken()
             } catch (error) {
@@ -17,16 +26,16 @@ export const useAuthStore = defineStore("auth", {
             }
         },
 
-        setAccessToken(token) {
+        setAccessToken(token: string | null): void {
             this.accessToken = token
         },
 
-        login(data) {
+        login(data: LoginData): void {
             this.setAccessToken(data.accessToken)
             this.username = data.username
         },
 
-        async logout() {
+        async logout(): Promise<void> {
             try {
                 const response = await axios.post("/api/auth/logout", null, {
                     headers: {
@@ -41,11 +50,11 @@ export const useAuthStore = defineStore("auth", {
 
                 this.setAccessToken(null)
             } catch (error) {
-                throw new Error(error)
+                throw new Error(error instanceof Error ? error.message : "Logout failed")
             }
         },
 
-        async refreshToken() {
+        async refreshToken(): Promise<void> {
             try {
                 const response = await axios.post("/api/auth/refresh-token", null, {
                     withCredentials: true,
@@ -54,7 +63,7 @@ export const useAuthStore = defineStore("auth", {
                 this.setAccessToken(response.data.accessToken)
                 this.username = response.data.username
             } catch (error) {
-                throw new Error(error)
+                throw new Error(error instanceof Error ? error.message : "Refresh token failed")
             }
         },
     },
