@@ -1,7 +1,7 @@
-export function formatDate(dateToFormat) {
+export function formatDate(dateToFormat: string | Date): string {
     const date = new Date(dateToFormat)
 
-    const options = {
+    const options: Intl.DateTimeFormatOptions = {
         year: "numeric",
         month: "short",
         day: "numeric",
